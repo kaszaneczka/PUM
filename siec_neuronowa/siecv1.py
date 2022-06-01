@@ -12,6 +12,7 @@ import math
 from tqdm import tqdm
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 def normalize(arr):
     return (arr - arr.min()) / (arr.max() - arr.min())
@@ -44,20 +45,6 @@ x = normalize(x)
 
 x, x_test, y, y_test = sklearn.model_selection.train_test_split(x, y, test_size=0.2, random_state=215366)
 
-# y = np.array([y]).T
-#
-# #x = np.insert(x, [0], [1], axis=1)
-#
-# #x_test = np.insert(x_test, [0], [1], axis=1)
-#
-#
-# # w1 = np.ones([2, 2])
-# # w2 = np.ones([2, 1])
-# #
-# # y1 = y[1]
-# # x1 = x[1]
-#
-# #print(w1,'\n','\n',w2,'\n','\n',y1,'\n','\n',x1)
 
 
 class Layer:
@@ -117,36 +104,49 @@ class Layer:
         return np.where(result > 0.5, 1, 0)
 
 
-    # def predykcja(self,x_test):
-    #     iksy = x_test
-    #     for i in self.warstwa:
-    #         iksy = i.forward(iksy)
-
-
-
-
 
 test = Layer()
-test.nowa_warstwa(neurony=100, wejscia=2)
-test.nowa_warstwa(neurony=100, wejscia=100)
-test.nowa_warstwa(neurony=100, wejscia=100)
-test.nowa_warstwa(neurony=100, wejscia=100)
+def neurony_warstwy(ilosc_wejsc_start,ilosc_neuronow:list, ilosc_warstw:int):
+    for a in range(ilosc_warstw):
+        if a == 0:
+            test.nowa_warstwa(neurony=ilosc_neuronow[a], wejscia=ilosc_wejsc_start)
+            print('1',a,ilosc_wejsc_start)
+        elif a == ilosc_warstw-1:
+            test.nowa_warstwa(neurony=1, wejscia=ilosc_neuronow[a-1])
+            print('2',a)
+        else:
+            test.nowa_warstwa(neurony=ilosc_neuronow[a], wejscia=ilosc_neuronow[a - 1])
+            print('3',a)
 
-test.nowa_warstwa(neurony=1, wejscia=100)
+neurony_warstwy(2,[100,100,100,100,100], 5)
+
+# test.nowa_warstwa(neurony=100, wejscia=2)
+# test.nowa_warstwa(neurony=100, wejscia=100)
+# test.nowa_warstwa(neurony=100, wejscia=100)
+# test.nowa_warstwa(neurony=100, wejscia=100)
+#
+# test.nowa_warstwa(neurony=1, wejscia=100)
 
 
 test.learn( 200, x, y)
 #predykcja wartości testowych --------------------
 u = test.predict(x_test)
 #wyswietlanie ------------------------------------
+macierz_pomylek = confusion_matrix(y_test, u)
+print(macierz_pomylek)
+
 z = test.predict(mmesh.T)
 z = z.reshape(mesh.shape)
 plt.contourf(mesh, mesh.T, z, alpha=0.3)
 plt.scatter(x_test[:, 0], x_test[:, 1], marker="o", c=y_test, s=25, edgecolor="k")
+
+disp = ConfusionMatrixDisplay(confusion_matrix=macierz_pomylek,display_labels= [0,1])
+fig, ax = plt.subplots(figsize=(15, 15))
+disp.plot(ax=ax)
 plt.show()
 
 
-print(u.T[0] == y_test)
+
 
 #print(test.warstwa[0].m_w)
 #print(x,y)
